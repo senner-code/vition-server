@@ -1,0 +1,77 @@
+import pool from "../db.js";
+import bcrypt from 'bcrypt'
+import * as uuid from "uuid"
+import mailService from "./mailService.js";
+import UserDto from "../dtos/user.dto.js";
+import tokenService from "./tokenService.js";
+import ApiError from "../exceptions/api.error.js";
+
+
+class UserService {
+  async registration(username, email, password) {
+    const candidate = (await pool.query(`select * from data.users where email = $1`, [email])).rowCount
+      if (candidate > 0) {
+        throw ApiError.BadRequest('Пользователь передал не верные данные')
+      }
+      const hashPassword = await bcrypt.hash(password, 3)
+      const activationLink = uuid.v4()
+      const user = (await pool.query(`insert into data.users (username, email, password, link) values ($1, $2, $3, $4) returning *`, [username, email, hashPassword, activationLink])).rows[0]
+      const userDto = new UserDto(user)
+      const tokens = tokenService.generateTokens({ ...userDto })
+      await tokenService.saveToken(userDto.id, tokens.refreshToken)
+      await mailService.sendActivationMail(email, `${process.env.SERVER_URL}:${process.env.PORT}/api/user/activate/${activationLink}`, username)
+      return {...tokens, user: userDto}
+  }
+
+  async login(email, password) {
+    const user = await pool.query(`select * from data.users where email = $1`, [email])
+   
+    if(user.rowCount <= 0) {
+      throw ApiError.BadRequest('Пользователь не найден или не верный пароль')
+    }
+    
+    const isPassEquals = await bcrypt.compare(password , user.rows[0].password)
+
+    if(!isPassEquals){
+      throw ApiError.BadRequest('Пользователь не найден или не верный пароль')
+    }
+    const userDto = new UserDto(user.rows[0])
+    const tokens  = tokenService.generateTokens({...userDto})
+    await tokenService.saveToken(userDto.id, tokens.refreshToken)
+    return {...tokens, user: userDto}
+  }
+
+  async logout(refreshToken){
+    return await tokenService.removeToken(refreshToken)
+  }
+
+  async refresh(refreshToken){
+    if(!refreshToken){
+      console.log('Error');
+    }
+    const userData = tokenService.validateRefreshToken(refreshToken)
+    if(!userData){
+      throw ApiError.UnauthorizedError('Токен умер')
+    }
+    const tokenDb = await tokenService.findToken(userData.id, refreshToken)
+    if(!userData || !tokenDb){
+      return 'Error refresh'
+    }
+    const user = await pool.query(`select * from data.users where id = $1`, [userData.id])
+    const userDto = new UserDto(user.rows[0])
+    const tokens  = tokenService.generateTokens({...userDto})
+    await tokenService.saveToken(userDto.id, tokens.refreshToken)
+    return {...tokens, user: userDto}
+    
+  }
+
+  async activate(activationLink) {
+    const user = (await pool.query(`select * from data.users where link = $1`, [activationLink])).rowCount
+    if (user <= 0) {
+      return false
+    }
+    await pool.query(`update data.users set activated = $1 where link = $2`, [1, activationLink])
+  }
+}
+
+export default new UserService()
