@@ -1,9 +1,9 @@
 import pool from "../db.js";
 import bcrypt from 'bcrypt'
 import * as uuid from "uuid"
-import mailService from "./mailService.js";
+import mailService from "./mail.service.js";
 import UserDto from "../dtos/user.dto.js";
-import tokenService from "./tokenService.js";
+import tokenService from "./token.service.js";
 import ApiError from "../exceptions/api.error.js";
 
 
@@ -46,9 +46,6 @@ class UserService {
   }
 
   async refresh(refreshToken){
-    if(!refreshToken){
-      console.log('Error');
-    }
     const userData = tokenService.validateRefreshToken(refreshToken)
     if(!userData){
       throw ApiError.UnauthorizedError('Токен умер')

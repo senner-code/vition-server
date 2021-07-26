@@ -1,6 +1,7 @@
 
-import userService from "../service/userService.js";
+import userService from "../service/user.service.js";
 import {validationResult} from 'express-validator'
+import ApiError from "../exceptions/api.error.js";
 class UserController {
 
 
@@ -8,7 +9,7 @@ class UserController {
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
-        return res.json(false)
+        throw ApiError.BadRequest('Пользователь передал не верные данные',errors[0])
       }
       const { username, email, password } = req.body
       const userData = await userService.registration(username, email, password)
@@ -27,7 +28,6 @@ class UserController {
       const { email, password } = req.body
       const userData = await userService.login(email, password)
       res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true })
-      console.log(userData);
       return res.json(userData)
     } catch (e) {
       next(e)
