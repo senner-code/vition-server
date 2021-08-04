@@ -4,9 +4,8 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router()
 
-router.post(
-  '/add',
-  boardController.createBoard
-)
+router.post('/create',boardController.createBoard)
+router.post('/getall', boardController.getBoards)
+router.post('/getboard', boardController.getBoardByUserID)
 
 export default router

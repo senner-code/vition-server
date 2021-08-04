@@ -14,7 +14,7 @@ class TokenService {
     try {
       const candidate = (await pool.query(`select * from data.token where userid = ${userID}`)).rowCount
       if (candidate > 0) {
-        await pool.query(`update data.token set refreshtoken = $1 where userid = $2`, [refreshToken, userID])
+        await pool.query(`UPDATE data.token SET refreshtoken = '${refreshToken}' where userid = ${userID}`)
         return true
       }
       await pool.query(`insert into data.token (userid, refreshtoken) values ($1,$2)`, [userID, refreshToken])
@@ -29,7 +29,8 @@ class TokenService {
   }
 
   async findToken(userID, token) {
-    return (await pool.query(`select * from data.token where userid = $1`, [userID])).rows[0].refreshtoken === token ? true : false
+    const dataToken = (await pool.query(`select * from data.token where userid = $1`, [userID])).rows[0].refreshtoken === token ? true : false
+    return dataToken
   }
   
   validateAccessToken(token){

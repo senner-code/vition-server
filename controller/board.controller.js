@@ -1,17 +1,25 @@
-import pool from "../db.js";
 import boardService from "../service/board.service.js";
 
 class BoardController {
 
+  //
   async createBoard(req, res, next) {
     const boardInfo = req.body
     const data = await boardService.createBoard(boardInfo.name, boardInfo.userID)
     return res.json(data)
   }
 
-  async getBoard(req, res, next) {
-    const userId = req.body.id
-    return boardService.getBoards(userId)
+  //For Future
+  async getBoards(req, res, next) {
+    const userID = req.body.userID
+    const boardsData = await boardService.getBoards(userID)
+    return res.json(boardsData)
+  }
+
+  async getBoardByUserID(req, res, next){
+    const userID = req.body.userID
+    const boardData = await boardService.getBoardByUserID(userID)
+    return res.json(boardData)
   }
 
 }

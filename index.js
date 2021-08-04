@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import userRouter from './routes/user.router.js'
 import boardRouter from './routes/board.router.js'
 import errorMiddleware from './middlewares/error.middleware.js'
+import authMiddleware from './middlewares/auth.middleware.js'
 
 
 const app = express()
@@ -17,7 +18,11 @@ app.use(cors({
 }
 ))
 app.use('/api/user', userRouter)
-app.use('/api/board', boardRouter)
+app.use(
+  '/api/board', 
+  authMiddleware,
+  boardRouter
+)
 
 
 app.use(errorMiddleware)

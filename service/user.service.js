@@ -20,6 +20,7 @@ class UserService {
       const tokens = tokenService.generateTokens({ ...userDto })
       await tokenService.saveToken(userDto.id, tokens.refreshToken)
       await mailService.sendActivationMail(email, `${process.env.SERVER_URL}:${process.env.PORT}/api/user/activate/${activationLink}`, username)
+
       return {...tokens, user: userDto}
   }
 
