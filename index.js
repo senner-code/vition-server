@@ -6,7 +6,8 @@ import userRouter from './routes/user.router.js'
 import boardRouter from './routes/board.router.js'
 import errorMiddleware from './middlewares/error.middleware.js'
 import authMiddleware from './middlewares/auth.middleware.js'
-
+import widgetRouter from './routes/widget.router.js'
+import transactionRouter from './routes/transaction.router.js'
 
 const app = express()
 dotenv.config()
@@ -22,6 +23,18 @@ app.use(
   '/api/board', 
   authMiddleware,
   boardRouter
+)
+
+app.use(
+  '/api/widget',
+  authMiddleware,
+  widgetRouter
+)
+
+app.use(
+  '/api/transaction',
+  authMiddleware,
+  transactionRouter
 )
 
 

@@ -18,6 +18,7 @@ class BoardController {
 
   async getBoardByUserID(req, res, next){
     const userID = req.body.userID
+
     const boardData = await boardService.getBoardByUserID(userID)
     return res.json(boardData)
   }
