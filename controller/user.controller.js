@@ -1,21 +1,20 @@
-
 import userService from "../service/user.service.js";
 import {validationResult} from 'express-validator'
 import ApiError from "../exceptions/api.error.js";
+
 class UserController {
 
 
   async registration(req, res,next) {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      throw ApiError.BadRequest('Неверные данные или данный email зарегистрирован', errors[0])
+    }
     try {
-      const errors = validationResult(req)
-      if (!errors.isEmpty()) {
-        throw ApiError.BadRequest('Пользователь передал не верные данные',errors[0])
-      }
-      const { username, email, password } = req.body
-      const userData = await userService.registration<User>(username, email, password)
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true })
+      const {username, email, password} = req.body
+      const userData = await userService.registration(username, email, password)
+      res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
       return res.json(userData)
-
     } catch (e) {
       next(e)
     }
@@ -25,9 +24,9 @@ class UserController {
 
   async login(req, res,next) {
     try {
-      const { email, password } = req.body
+      const {email, password} = req.body
       const userData = await userService.login(email, password)
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true })
+      res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
       return res.json(userData)
     } catch (e) {
       next(e)
@@ -35,15 +34,20 @@ class UserController {
   }
 
 
-  async logout(req, res){
+  async logout(req, res, next) {
+    try {
+
+    } catch (e) {
+      next(e)
+    }
     const {refreshToken} = req.cookies
     const token = await userService.logout(refreshToken)
     res.clearCookie('refreshToken')
     return res.json(token)
   }
 
-  
-  async refresh(req, res,next){
+
+  async refresh(req, res, next) {
     try {
       const {refreshToken} = req.cookies
       const userData = await userService.refresh(refreshToken)

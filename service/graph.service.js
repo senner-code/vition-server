@@ -18,7 +18,6 @@ class GraphService {
 
   async getDataAboutCategory(board_id, from, to, type) {
     try {
-      //Улучшить с помощью оптимизированного SQL запроса !DONE
       return (await pool.query(`
           select sum(transaction.value)::integer as value, transaction.category_id as id, category.name
           from data.transaction,

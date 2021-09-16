@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import ApiError from "../exceptions/api.error.js";
 
 class MailService {
 
@@ -15,12 +16,13 @@ class MailService {
   }
 
   async sendActivationMail(to, link,name) {
-    await this.transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to,
-      subject: 'Активация аккаунта',
-      text: '',
-      html: `
+    try {
+      await this.transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to,
+        subject: 'Активация аккаунта',
+        text: '',
+        html: `
         
       
       <div>
@@ -30,7 +32,11 @@ class MailService {
       
       
       `
-    })
+      })
+    } catch (e) {
+      throw new ApiError(500, 'Server error')
+    }
+
   }
 }
 

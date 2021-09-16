@@ -1,14 +1,20 @@
 import jwt from 'jsonwebtoken'
 import pool from '../db.js'
+import ApiError from "../exceptions/api.error.js";
 
 class TokenService {
   generateTokens(payload) {
-    const accessToken = jwt.sign(payload, process.env.JWT_ACCESS, { expiresIn: '30m' })
-    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH, { expiresIn: '30d' })
-    return {
-      accessToken,
-      refreshToken
+    try {
+      const accessToken = jwt.sign(payload, process.env.JWT_ACCESS, {expiresIn: '30m'})
+      const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH, {expiresIn: '30d'})
+      return {
+        accessToken,
+        refreshToken
+      }
+    } catch (e) {
+      throw new ApiError(500, 'Server error')
     }
+
   }
   async saveToken(userID, refreshToken) {
     try {
@@ -25,12 +31,25 @@ class TokenService {
   }
 
   async removeToken(refreshToken) {
-    return await pool.query(`delete from data.token where refreshtoken = $1`, [refreshToken])
+    try {
+      return await pool.query(`delete
+                               from data.token
+                               where refreshtoken = $1`, [refreshToken])
+
+    } catch (e) {
+      throw new ApiError(500, 'Server error')
+    }
   }
 
   async findToken(userID, token) {
-    const dataToken = (await pool.query(`select * from data.token where userid = $1`, [userID])).rows[0].refreshtoken === token ? true : false
-    return dataToken
+    try {
+      return (await pool.query(`select *
+                                from data.token
+                                where userid = $1`, [userID])).rows[0].refreshtoken === token
+
+    } catch (e) {
+      throw new ApiError(500, 'Server error')
+    }
   }
   
   validateAccessToken(token){
