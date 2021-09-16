@@ -11,14 +11,13 @@ class BoardController {
 
   //For Future
   async getBoards(req, res, next) {
-    const userID = req.body.userID
+    const userID = req.params.id
     const boardsData = await boardService.getBoards(userID)
     return res.json(boardsData)
   }
 
   async getBoardByUserID(req, res, next){
-    const userID = req.body.userID
-
+    const userID = req.params.id
     const boardData = await boardService.getBoardByUserID(userID)
     return res.json(boardData)
   }

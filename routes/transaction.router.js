@@ -4,7 +4,7 @@ import transactionController from '../controller/transaction.controller.js'
 const router = express()
 
 router.post('/create', transactionController.addTransaction)
-router.get('/getbywidget/:id/:from/:limit',transactionController.getTransactionByWidget)
+router.get('/getbycategory/:id/:from/:limit',transactionController.getTransactionByCategory)
 router.get('/getbyuser/:id/:from/:limit', transactionController.getTransactionByUser)
 
 

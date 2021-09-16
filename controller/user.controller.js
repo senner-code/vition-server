@@ -12,7 +12,7 @@ class UserController {
         throw ApiError.BadRequest('Пользователь передал не верные данные',errors[0])
       }
       const { username, email, password } = req.body
-      const userData = await userService.registration(username, email, password)
+      const userData = await userService.registration<User>(username, email, password)
       res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true })
       return res.json(userData)
 
